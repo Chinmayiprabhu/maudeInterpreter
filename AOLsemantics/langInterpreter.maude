@@ -1,0 +1,251 @@
+load types
+load prelude.maude
+view Var from TRIV to DATA is
+   sort Elt to Var .
+endv
+
+view Data from TRIV to DATA is
+   sort Elt to Data .
+endv
+
+view Expr from TRIV to DATA is
+   sort Elt to Expr .
+endv
+
+
+*** Bound variables ***
+fmod STATE is
+protecting MAP{Var, Expr} * (sort Map{Var, Expr} to Subst,
+                             op empty : -> Map{Var, Expr} to noSub ) .
+op dom : Var Subst -> Bool .
+op remove : Var Subst -> Subst .
+
+*** Non-comm composition operator for substitutions
+op _#_ : Subst Subst -> Subst .
+vars V V' : Var .
+var D : Data . vars S1 S2  : Subst .
+
+eq S1 # noSub = S1 .
+eq S1 # ((V |-> D), S2) = insert(V,D,S1) # S2 .
+
+eq dom(V, noSub) = false .
+eq dom(V, ((V' |-> D), S1)) = if V == V' then true else dom(V, S1) fi .
+eq dom(V, S1 # S2) = dom(V, S1) or dom(V, S2) .
+
+eq remove(V, (S1, V |-> D)) =  S1 .
+eq remove(V, S1) =  S1 [owise] .
+
+
+endfm
+
+fmod EVAL is
+protecting STATE .
+protecting LIST {Expr} * (sort LIST{Expr} to list) .
+pr BOOL-OPS .
+
+*** Evaluation of expressions
+op eval	    : Expr Subst     -> Data .     *** evaluate expression
+op eval	    : EmpList Subst     -> Data .     *** evaluate expression
+op evalB    : Expr Subst     -> Bool .
+op evalN    : Expr Subst     -> Nat .
+op evalS    : Expr Subst     -> String .
+op evalList : ExprList Subst -> DataList . *** maps list to values
+op _+_      : Data Data -> Data .
+op inList   : Data DataList -> Bool .
+
+*** Variables
+var E E' : Expr .     var EL : ExprList .     var D D' : Data . var NPd NPd' : NonPrivData .
+var Pd Pd' : PrivData .
+var S : Subst .         var Q : Qid . var t t' : Tags .
+var I : Int .         var B : Bool .          var STR : String .
+var DL : DataList .
+
+eq eval(A, S) = S [A] .
+eq eval(D, S) = D .
+eq PrivData(NPd , t) + PrivateData(NPd' , t') = PrivateData( (NPd appen NPd') , (union(U(t), U(t')), union ( P(t) , P(t')))) .
+eq NPd + PrivData(NPd , t) = PrivateData( (NPd appen NPd') , t ) .
+eq PrivData(NPd , t) + NPd = PrivateData( (NPd appen NPd') , t ) .
+eq NPd + NPd' = NPd appen NPd' .
+eq inList(D, emp) = false .
+eq inList(D, D') = D == D' .
+eq inList(D, (D',, DL)) = if (D == D') then true else inList(D, (DL)) fi .
+
+eq evalN(E,S) = eval(E,S) asNat .                  *** expressions
+eq evalB(E,S) = eval(E,S) asBool .                 *** expressions
+eq evalS(E,S) = eval(E,S) asStr .                  *** expressions
+eq eval (emp, S)= emp .
+
+*** lists
+eq evalList(emp, S)   = eval(emp, S) .
+eq evalList(E,,EL, S) = eval(E, S),, evalList(EL, S) .
+
+endfm
+
+
+fmod AOL-STATEMENTS is
+pr DATA .
+
+sorts Mtd Cid Stm .
+subsort Qid < Mtd Cid .
+
+op skip : -> Stm [ctor] .
+op _!_(_) : Expr Mtd ExprList -> Stm [ctor] . *** async call with label
+op _:=_  : Var Expr -> Stm [ctor] .       *** simple assignment
+op _:= new_(_)[of _ ] : Var Cid ExprList Entity -> Stm [ctor] .
+op _(_) : Mid ExprList  -> Stm [ctor] .  *** sync. call
+op _:= newuser(_) : Var Uid -> Stm [ctor] .
+op end : -> Stm .
+op continue : Nat -> Stm [ctor] .
+
+endfm
+
+view Stm from TRIV to STATEMENTS is
+   sort Elt to Stm .
+endv
+
+fmod STM-LIST is
+pr AOL-STATEMENTS .
+pr STATE .
+
+protecting LIST{Stm} * (sort List{Stm} to StmList,
+                        sort NeList{Stm} to NeStmList,
+                        op __ : List{Stm} List{Stm} -> List{Stm} to _;_) .
+op if(_){_} : Expr StmList -> Stm [ctor] .
+endfm
+
+
+fmod PROCESS is
+pr STM-LIST .
+sorts Process NeMProc MProc .
+
+op idle : -> Process [format (!b o )] .
+op noProc : -> Process [ctor] .
+op _:_ : MProc MProc -> MProc [ctor assoc comm id: noProc]
+op {_|_}(_) : Subst StmList Entity -> Process [ctor format (o r nb o )] .
+var L : Subst .
+var st : Stm .
+var Sl : StmList .
+var eta : Entity .
+
+eq {L|Sl}(eta) + st = {L|Sl ; st}(eta) .
+
+endfm
+
+fmod CLASS is
+protecting STM-LIST .
+
+sorts    Class  Mtd MMtd Inh InhList . *** inheritance list
+subsorts Inh < Expr .
+subsorts Inh < InhList .
+
+op  _<_> : Cid  ExprList -> Inh .     *** initialised superclass
+op noInh : -> InhList [ctor] .
+op  _##_   : InhList InhList -> InhList [ctor assoc id: noInh] .
+***op str(_) : Cid -> Data .
+
+var Ih : Inh .
+var IL : InhList .
+var S : Subst .
+var SL : StmList .
+vars Q Q' : Qid .
+var MM : MMtd .
+var DL : DataList .
+var O : Oid .
+var N : Nat .
+var VL : VarList .
+var eta : Entity .
+
+eq  Ih ## IL ## Ih = Ih ## IL .
+
+op <_: Mtdname | Param:_, LVar:_, Code:_> :
+    Qid VarList Subst StmList -> Mtd [ctor
+      format (g! g o o o g o o g o o g o g o)] .
+
+subsort Mtd < MMtd .    *** Multiset of methods
+
+op noMtd : -> Mtd [ctor] .
+op _*_  : MMtd MMtd -> MMtd [ctor assoc comm id: noMtd format (o o on o)] .
+
+
+
+op <_: Cl | Inh:_, Par:_, Att:_, Mtds:_, Ocnt:_> :
+    Cid InhList VarList Subst MMtd Nat -> Class
+   [format (b! b o o o b o o  b o o  b o o  b on o  b o  b! on )] .
+
+op emptyClass : -> Class .
+eq emptyClass = < 'noClass : Cl | Inh: noInh, Par: emp, Att: noSub, Mtds: noMtd, Ocnt: 0 > .
+
+*** Class/method functions ***
+op get : Qid MMtd Oid Nat DataList Entity  -> Process .  *** fetches pair (code, vars)
+op _in_ : Qid MMtd -> Bool .  *** checks if Q is a declared
+                              *** method in the method multiset
+
+eq Q in noMtd = false .
+eq Q in (< Q' : Mtdname | Param: AL, Latt: S, Code: SL > * MM) =
+     if (Q == Q') then true else (Q in MM) fi .
+
+*** bind call to process
+eq get(Q, noMtd, O, N, DL, eta) = noProc .
+eq get(Q, < Q' : Mtdname | Param: AL, Latt: S, Code: SL > * MM, O, N, DL, eta) =
+    if Q == Q'
+    then (insert('caller, O, insert('cnCaller, eta, S)), ((AL :::= DL) ; SL) @ empty)
+    else get(Q, MM, O, N, DL, eta) fi .
+
+endfm
+
+
+
+fmod OBJECT is
+protecting CLASS .
+
+sort Object .
+
+op <_: Ob | Cl:_ | Att:_, Pr:_, Lcnt:_, Ent:_> :
+       Oid Cid Subst Process Nat Subst -> Object
+         [ctor format (nr! r o o o  r o r  r o r  r o r o r r! no)] .
+
+
+op noObj : -> Object [ctor] .
+
+
+endfm
+
+fmod CONSENT is protecting DATA .
+protecting SET{Policy} * (sort NeSet{Policy} to NeSetPl,
+                            sort Set{Policy} to SetPl) .
+sort Instances InstancesSet Consent .
+subsort Instances < InstancesSet .
+
+op _ --> <_:_> : Uid SetPl InstancesSet ->  Consent [ctor  format (nr! rr   o o o o o o o o o r! no) ] .
+
+endfm
+
+
+
+
+fmod COMMUNICATION is
+  protecting OBJECT .
+  protecting CONVERSION .
+  pr CONSENT .
+
+sort Msg MMsg Kid Queue .
+subsort Msg < MMsg .
+
+op none : -> MMsg [ctor] .
+op _+_ : MMsg MMsg -> MMsg [ctor assoc comm id: none] .
+
+*** INVOCATION and REPLY
+op invoc(_,_,_,_,_) : Nat Oid Oid Qid List -> Msg [ctor     *** invocation
+      format (rg o o o o o o o o o o o no)] .
+op comp(_,_,_) : Nat Oid List -> Msg [ctor                  *** completion
+      format (rg o o o o o o o no)] .
+op error : String -> Msg [ctor] .                           *** error
+op warning : String -> Msg [ctor] .                         *** warning
+op new_(_) : Qid List -> Msg .              *** initialise program message
+
+*** message queue, with function q for queue-name
+*** op q : Oid -> Kid .
+
+op < _: Qu | Ev:_> : Oid MMsg -> Queue [format (nm! m! om m m  m o m! no)] .
+
+endfm
