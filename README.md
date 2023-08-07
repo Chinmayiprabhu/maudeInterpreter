@@ -16,8 +16,8 @@ PAOL data types and Interpreter is specified in the file PAOLInterpreter.maude. 
 
 Download Maude 3.1 and the files listed on /maude in the same directory. After installing Maude, to run the model checker and test the properties for our hygienic program, use the following commands in your terminal:
 
-sudo ./maude.darwin64
-load PAOLInterpreter.maude
-load workingconfig.maude
-load model-checker.maude
-load PAOLmodelchecker.maude
+sudo ./maude.darwin64 <br>
+load PAOLInterpreter.maude <br>
+load workingconfig.maude <br>
+load model-checker.maude <br>
+load PAOLmodelchecker.maude <br>
