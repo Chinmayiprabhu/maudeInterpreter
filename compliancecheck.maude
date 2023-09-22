@@ -1,0 +1,79 @@
+mod COMPLIANCE-CHCEKER is protecting INTERPRETER .
+  protecting PROGRAM .
+  including MODEL-CHECKER .
+  ***sort STATE .
+  ***subsort state < STATE .
+  ***subsort configuration < STATE .
+
+  op useA : -> Prop .
+  op collectA : -> Prop .
+  op tranferA : -> Prop .
+  op storeA : -> Prop .
+  op _|=_ : Configuration Prop -> Bool [frozen] .
+
+var cfg : Configuration .
+var D D' U : Data .
+var N F N' : Nat .
+var B : Bool .
+var Policy : Policy .
+vars O O' O'' : Oid .
+vars S S' L' L : Subst .
+vars Tg Tg' : Tags .
+vars eta_0 eta eta' eta'' : Entity .
+var Pr : Purpose .
+var PrSet PrSet' : PurposeSet .
+var Ac : Action .
+var AcSet : ActionSet .
+vars Cn Cn' : Consent .
+vars CnSet CnSet'  : ConsentSet .
+var q : MProc .
+var SL SL' SL'' : StmList .
+var C C' : Cid .
+var STRING : String .
+var MSG : Msg  .
+var POLICY : Policy .
+var PSet : SetPl .
+vars Q Q' : Qid .
+var V V' V'' : Vid .
+var E : Expr .
+var EL EL' : ExprList .
+var M : Qid .
+var ST : Stm .
+var P P' : Process .
+var Pair : Pair .
+var formula : Formula .
+var VL : VidList .
+vars OL OL' : OidSet .
+var prop : Prop .
+var Pd1 : PrivData .
+
+op comply : Configuration Oid ConsentSet -> Prop .
+**************************
+
+***(
+ceq  (cfg  < O :Ob | Class: C | Att: S, { L | assign(Q ; E) ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > Cn) |=
+comply(cfg, O , CnSet ) = true
+if useA() == true /\ collectA() == true .
+ceq  (cfg  < O :Ob | Class: C | Att: S, Pr: { L |  assign(@ Q ; E) ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > Cn) |=
+comply(cfg, O , CnSet ) = true
+if useA() == true /\ collectA() == true /\ storeA() == true .
+ceq  (cfg  < O :Ob | Class: C | Att: S, Pr: { L |  if(E){SL1} ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > Cn) |=
+comply(cfg, O , CnSet ) = true
+if useA() == true .
+ceq  (cfg  < O :Ob | Class: C | Att: S, Pr: { L |  asyncall(V ; E ; M ; EL) ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > Cn) |=
+comply(cfg, O , CnSet ) = true
+if useA() == true /\ transferA() == true .
+ceq  (cfg  < O :Ob | Class: C | Att: S, Pr: { L | new(V ; C' ; EL ; eta'') ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > Cn) |=
+comply(cfg, O , CnSet ) = true
+if useA() == true /\ collectA() == true /\ storeA()  == true /\ transferA() == true .
+ceq  (cfg  < O :Ob | Class: C | Att: S, Pr: { L | return(E) ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > Cn) |=
+comply(cfg, O , CnSet ) = true
+if useA() == true /\ transferA() == true .)
+
+op GDPRComplianceConf : Configuration PrivData ConsentSet -> Formula .
+eq GDPRComplianceConf(cfg , Pd1, CnSet) = True .
+op GDPRCompliance : Oid PrivData ConsentSet -> Formula .
+
+
+
+endm

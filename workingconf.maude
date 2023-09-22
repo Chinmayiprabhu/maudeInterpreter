@@ -1,0 +1,34 @@
+mod PROGRAM is
+  pr INTERPRETER .
+  ops Hosp Nu GP ED  :  -> Entity .
+  ops Healthcare Emergency : -> Purpose .
+  op init : -> MConfiguration .
+  eq init = main {('db |-> null,'his |-> null, 'nu |-> null, 'gp |-> null, 'ed |-> null, 'alice |-> null, 'bob |-> null, 'fut1 |-> null, 'fut2 |-> null, 'fut3 |-> null,  'fut4 |-> null ),
+  new('his ; 'His ; 'db ; Hosp) ; new('nu ; 'Nurse ; 'his ; Nu) ; new('gp ; 'Doctor ; 'his ; GP) ; new('ed ; 'Doctor ; 'his ; ED) ;
+  asyncall('fut1 ; 'nu ; 'registerPt ; ('alice ,'dateofbirth)) ;
+  asyncall('fut2 ; 'nu ; 'registerPt ; ('bob ,'dateofbirth));
+  asyncall('fut3 ; 'gp ; 'consultation ; ('alice ,'dateofbirth)) ;
+  asyncall('fut4 ; 'ed ; 'consultation ; ('bob ,'dateofbirth));
+  await 'fut1 ;
+  await 'fut2 ;
+  await 'fut3 ;
+  await 'fut4 }
+  (user('alice) -> ((Hosp,Nu,GP),(use, collect, store), (Healthcare, Emergency)): ('his, 'nu)) ,
+  (user('bob) -> ((Hosp,GP),(use, collect, store, transfer ), (Healthcare, Emergency)): ('his, 'nu, 'gp))
+   < 'Nurse : Cl | Par: ('his) , Att: (noSubst),
+   Mtds: < 'registerPt : Method | Param: ('alice, 'dateofbirth), Latt: ('f |-> null),
+   Code: asyncall('f ; 'his ; 'registerPt ; (tag('dateofbirth ; tags(user('alice) ,(Healthcare,Emergency))))) ; await 'f  > ,
+   Ocnt: 0 >
+   < 'Doctor : Cl | Par: ('his) , Att: (noSubst),
+   Mtds: < 'consultation : Method | Param: ('alice, 'dateofbirth), Latt: ('f1 |-> null ,'d |-> null ),
+   Code: asyncall('f ; 'his ; 'getPtinfo ; ('alice)) ; await 'f  ; get('f ; 'd) > ,
+   Ocnt: 0 >
+   < 'His : Cl | Par: ('d) , Att: (noSubst),
+   Mtds: < 'registerPt : Method | Param: ('alice, 'dateofbirth), Latt: ('f |-> null),
+   Code: asyncall('f ; 'his ; 'registerPt ; (tag('dateofbirth ; tags(user('alice) ,(Healthcare,Emergency))))) ; await 'f  > ,
+   Ocnt: 0 >
+   < 'DB : Cl | Par: (emp) , Att: (noSubst),
+   Mtds: < 'getpatientinfo : Method | Param: ('alice), Latt: ('data |-> null),
+   Code: assign('data ; 'alice) ; return('data)  > ,
+   Ocnt: 0 > .
+endm

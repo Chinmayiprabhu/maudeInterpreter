@@ -1,0 +1,1009 @@
+fmod DATA is
+  pr QID .
+  pr STRING .
+  pr INT .
+  pr NAT .
+  pr FLOAT .
+sorts Uid Data Oid Expr Alpha NonPrivData PrivData MsgId Vid  Policy Purpose .
+subsort NonPrivData  < Data .
+subsort PrivData < Data .
+subsort Oid MsgId   < NonPrivData .
+subsort Data < Expr .
+subsort Qid < Vid < Expr .
+subsort Expr < Alpha .
+subsort Policy < NonPrivData .
+sort Action .
+sort Entity .
+sorts  ExprList DataList use Tags TagsList VidList NeExprList NeDataList EidList OidSet .
+subsort Vid < VidList < ExprList .
+subsort Oid < OidSet .
+***subsort Policy < Expr .
+subsort Expr < NeExprList < ExprList .
+subsort Data < NeDataList < DataList .
+subsort DataList < ExprList .
+subsort NeDataList < NeExprList .
+op noent : -> Entity .
+op emp : -> DataList [ctor] .
+op _,,_ : ExprList ExprList -> ExprList [ctor assoc id: emp prec 27 format (d r os d d)] .
+op _,,_ : NeExprList ExprList -> ExprList [ctor ditto].
+op _,,_ : ExprList NeExprList -> ExprList [ctor ditto].
+op _,,_ : NeDataList DataList -> DataList [ctor ditto] .
+op _,,_ : DataList NeDataList -> DataList [ctor ditto] .
+op _,,_ : DataList DataList -> DataList [ctor ditto ] .
+*** Variable references are named by Qids directly.
+*** Instance variable references are decorated:
+
+op @_ : Qid -> Vid [ctor] .
+
+***op tags : Data Data -> Tags [ctor] .
+***op tags : Expr Expr -> Tags [ctor] .
+op nothing : -> NonPrivData [ctor] .
+op user : Qid -> Uid [ctor] .
+***op Purpose : Qid -> Purpose [ctor] .
+***op noUser : -> NonPrivData [ctor] .
+
+***op _(_) : Qid DataList -> Data . *** function application
+op _[_] : String ExprList -> Expr [ctor prec 12 format (! o d d d)] .
+op _[_] : String DataList -> Data [ctor prec 12 format (! o d d d)] .
+***converstion of data types into sort DATA
+
+op null : -> NonPrivData [ctor] .
+op obj :  Qid -> Oid [ctor] .
+op usr : Nat -> Uid  [ctor] .
+op n : Nat Oid -> MsgId [ctor] .
+op int(_)  : Int       -> NonPrivData [ctor format(o o ! o o)] .
+op float(_) : Float    -> NonPrivData [ctor format(o o ! o o)] .
+op str(_)  : String    -> NonPrivData [ctor format(o o ! o o)] .
+op bool(_) : Bool      -> NonPrivData [ctor format(o o ! o o)] .
+op isnothing : DataList -> Bool .
+
+***guard expression
+op ?(_)  : Expr -> Expr [ctor format (! o d d d)] .
+***op $error : String -> Expr [ctor format (r o)] .
+
+*** Reconversion for evaluation
+op _asInt             : Data -> Int .
+eq int(I)  asInt      = I .
+op _asNat             : Data -> Nat .
+eq int(N)  asNat      = N .
+op _asBool            : Data -> Bool .
+eq bool(B) asBool     = B .
+op _asStr             : Data -> String .
+eq str(S)  asStr      = S .
+
+*** Reconversion for evaluation
+op _asPaolBool     : Bool -> Data .
+***eq true asPaolBool  = true .
+
+var N : Nat .    var I : Int .
+var B : Bool .   vars S  S' : String . vars Q Q' : Qid .
+var O : Oid .
+
+var DL : DataList .
+vars D D'     : Data .
+vars E E'     : Expr .
+vars L L' L'' : ExprList .
+op _[_] : String ExprList -> Expr [ctor prec 12 format (! o d d d)] .
+op _[_] : String DataList -> Data [ctor prec 12 format (! o d d d)] .
+***ops _cat_  	  : Expr Expr -> Expr .
+***eq E cat E'      = 'plus [[[E ,, E']]] .
+***eq 'plus  [[[str(S),, str(S')]]]    = str(S + S') .
+***eq isnothing(D ,, DL) = ((D == nothing) or (D == null))or isnothing(DL)  .
+***eq isnothing(D,, emp)= ((D == nothing) or (D == null)) .
+***eq isnothing(D)= ((D == nothing) or (D == null)) .
+***eq isnothing(emp)= false .
+endfm
+
+view Vid from TRIV to DATA is
+   sort Elt to Vid .
+endv
+
+view Data from TRIV to DATA is
+   sort Elt to Data .
+endv
+
+view Expr from TRIV to DATA is
+   sort Elt to Expr .
+endv
+
+view Uid from TRIV to DATA is
+   sort Elt to Uid .
+endv
+
+view Entity from TRIV to DATA is
+  sort Elt to Entity .
+endv
+
+
+view Purpose from TRIV to DATA is
+  sort Elt to Purpose .
+endv
+
+
+view Action from TRIV to DATA is
+  sort Elt to Action .
+endv
+
+view Policy from TRIV to DATA is
+  sort Elt to Policy .
+endv
+
+
+
+fmod PURPOSE-SET is
+  protecting DATA .
+  protecting SET{Purpose} * (sort NeSet{Purpose} to NePurposeSet,
+                         sort Set{Purpose} to PurposeSet) .
+endfm
+
+
+fmod ACTION-SET is
+  protecting DATA .
+  protecting SET{Action} * (sort NeSet{Action} to NeActionSet,
+                         sort Set{Action} to ActionSet) .
+endfm
+fmod ENTITY-SET is
+  protecting DATA .
+  protecting SET{Entity} * (sort NeSet{Entity} to NeEntitySet,
+                         sort Set{Entity} to EntitySet) .
+endfm
+
+fmod UID-SET is
+protecting DATA .
+protecting SET{Uid} * (sort NeSet{Uid} to NeUidSet,
+                         sort Set{Uid} to UidSet) .
+endfm
+***************************************************************************
+***
+*** Signature of programs and states.
+***
+***************************************************************************
+
+*** The sort of a class identifier.
+***
+fmod PAOL-CID is
+  protecting QID .
+  sort Cid .
+  subsort Qid < Cid .
+
+  op Class : -> Cid [ctor] .
+  op None : -> Cid [ctor] .
+endfm
+
+view Cid from TRIV to PAOL-CID is
+  sort Elt to Cid .
+endv
+
+*** The sort of a Object identifier.
+fmod PAOL-OID is
+  protecting PAOL-CID .
+  protecting NAT .
+  protecting DATA .
+
+  subsort Oid < Data .
+--- Constructor of object names
+  op ob : Cid Int -> Oid [ctor] .
+endfm
+
+view Oid from TRIV to PAOL-OID is
+  sort Elt to Oid .
+endv
+
+
+*** The sort of a Method identifier.
+
+fmod PAOL-MID is
+  protecting QID .
+
+  sort Mid .
+  subsort Qid < Mid .
+endfm
+
+*** The sort of a Label identifier.
+
+fmod PAOL-DATA-LABEL is
+
+  extending DATA .
+  protecting PAOL-OID .
+
+  sort Label .
+  subsort Label < Data .
+
+  --- A label consists of the id of the sending object plus a unique number.
+  op label : Oid Nat -> Label [ctor format (o o)] .
+endfm
+
+view Label from TRIV to PAOL-DATA-LABEL is
+  sort Elt to Label .
+endv
+
+*** Binding variables to values ***
+***uses MAP from prelude
+fmod PAOL-SUBST is
+  protecting DATA .
+  extending MAP{Vid, Data} * (sort Map{Vid,Data} to SSubst,
+                              sort Entry{Vid,Data} to Binding,
+                              op empty : -> Map{Vid,Data} to noSubst,
+                              op insert : Vid Data Map{Vid,Data} -> Map{Vid,Data} to $insert ) .
+
+op dom : Vid Subst -> Bool .
+op remove : Vid Subst -> Subst .
+sort Subst .
+subsort SSubst < Subst .
+*** Non-comm composition operator for substitutions
+vars V V' : Vid .
+var VL : VidList .
+var DL : DataList .
+var D : Data .
+vars S1 S2 : Subst .
+var S3 : SSubst .
+
+op _::_ : Subst Subst -> Subst [assoc] .
+eq (S1 :: S2)[V] = if $hasMapping(S2, V) then S2[V] else S1[V] fi .
+
+eq dom(V, noSubst) = false .
+eq dom(V, ((V' |-> D), S1)) = if V == V' then true else dom(V, S1) fi .
+eq dom(V, S1 :: S2) = dom(V, S1) or dom(V, S2) .
+
+eq remove(V, (S1, V |-> D)) =  S1 .
+eq remove(V, S1) =  S1 [owise] .
+
+
+op hasMapping : Subst Vid -> Bool .
+eq hasMapping(S2, V) = $hasMapping(S2, V) .
+eq hasMapping(S1 :: S2, V) = $hasMapping(S2, V) or hasMapping(S1, V) .
+
+op insert : Vid Data Subst -> Subst .
+eq insert(V, D, S2) = $insert(V, D, S2) .
+eq insert(V, D, S1 :: S2) = S1 :: $insert(V, D, S2) .
+
+*** Replace an existing binding even in the middle of the SSubst stack.
+op update : Vid Data Subst -> Subst .
+eq update(V, D, S1 :: S2) = if $hasMapping(S2, V) then S1 :: $insert(V, D, S2)
+    else update(V, D, S1) :: S2 fi .
+ceq update(V, D, S2) = $insert(V, D, S2)
+if $hasMapping(S2, V) .       *** Block if no mapping exists.
+
+--- Create a substitution from a list of identifiers and data values.
+op createSubst : VidList DataList -> SSubst .
+eq createSubst(VL, DL) = $createSubst(noSubst, VL, DL) .
+op $createSubst : SSubst VidList DataList -> SSubst .
+***eq $createSubst(S2, noVid, emp) = S2 .
+***eq $createSubst(S2, (V, VL), (D :: DL)) = $createSubst($insert(V, D, S2), VL, DL) .
+
+endfm
+
+***(fmod PAOL-DATA-VIDLIST is
+  protecting LIST{Vid} * (sort List{Vid} to VidList,
+                          sort NeList{Vid} to NeVidList,
+                          op nil : -> List{Vid} to noVid,
+                          op __ : List{Vid} List{Vid} -> List{Vid} to _`,_ [format (d r os d)]) .
+endfm)
+
+fmod PRIV_DATA is
+  pr DATA .
+  protecting PURPOSE-SET .
+  protecting ACTION-SET .
+  protecting ENTITY-SET .
+  protecting UID-SET .
+
+
+  subsort Uid < UidSet .
+  ***  subsort Policy < Data . *** dont do this yet
+
+  subsort Purpose < PurposeSet .
+  subsort Action < ActionSet .
+  subsort Entity < EntitySet .
+  ****subsort Policy < PolicyList < ExprList .
+  subsort Tags < Expr .
+
+  var U : UidSet .
+  var P : PurposeSet .
+  var E : Expr .
+  var t : Tags .
+  op (_,_,_) : EntitySet ActionSet PurposeSet  -> Policy .
+  op tags : UidSet PurposeSet  -> Tags .
+  op PrivateData(_,_) : Expr Tags -> PrivData .
+  op Users(_) : Tags -> UidSet .
+  op Purposes(_) : Tags -> PurposeSet .
+  eq Users(tags(U,P))  = U .
+  eq Purposes(tags(U,P))  = P .
+  op getTags : Expr -> Tags .
+  eq getTags(PrivateData(E,t)) = t .
+  op <_,,_> : TagsList TagsList -> TagsList [ctor] .
+  op _appen_ : NonPrivData NonPrivData -> NonPrivData [ctor] .
+  op _appen_ : PrivData NonPrivData -> PrivData [ctor] .
+  op _appen_ : NonPrivData PrivData -> PrivData [ctor] .
+  op _appen_ : PrivData PrivData -> PrivData [ctor] .
+  op _(_) : String ExprList -> Expr .
+  *** function application
+  ***helpers for function application
+  op fparams : String -> VidList .
+  op fdefn : String -> Expr .
+
+endfm
+
+fmod CONSENT is
+protecting PRIV_DATA .
+protecting SET{Policy} * (sort NeSet{Policy} to NeSetPl,
+                            sort Set{Policy} to SetPl) .
+
+sort Consent NeConsentSet ConsentSet .
+subsort Consent < NeConsentSet < ConsentSet .
+
+op (_->_:_) : Uid SetPl OidSet ->  Consent [ctor ] .
+op none : -> ConsentSet [ctor] . *** Empty multiset
+op _,_ : ConsentSet ConsentSet -> ConsentSet [ctor assoc comm id: none] .
+op _,_ : NeConsentSet NeConsentSet -> NeConsentSet [ctor assoc comm id: none] .
+op deleteC : Consent ConsentSet -> ConsentSet . *** Remove ONE occurrence
+op _in_ : Consent ConsentSet -> Bool . *** Is element in multiset?
+var C : Consent . var CnSet : ConsentSet .
+eq deleteC(C , (C,CnSet)) = deleteC(C , CnSet) .
+eq deleteC(C, CnSet) = CnSet [owise] .
+eq C in (C , CnSet) = true .
+eq C in CnSet = false [owise] .
+op insertC : Consent ConsentSet -> ConsentSet .
+eq insertC(C , CnSet) = C , CnSet .
+
+
+
+endfm
+
+view Consent from TRIV to CONSENT is
+  sort Elt to Consent .
+endv
+
+fmod PAOL-STATEMENTS is
+protecting PAOL-DATA-LABEL .
+protecting PAOL-SUBST .
+protecting PAOL-CID .
+protecting PAOL-MID .
+protecting CONSENT .
+
+
+sorts Stm .
+
+op skip : -> Stm [ctor] .
+op _:= NewUser : Vid -> Stm [ctor] . ***unsure
+op await_ : Expr -> Stm [ctor] .
+op assign(_;_) : Vid Expr -> Stm [ctor] .
+op tag(_;_) : Expr Tags -> PrivData [ctor] .
+op addtag( _;_) : Vid PrivData -> Stm [ctor] .
+op asyncall(_;_;_;_) : Vid Expr Mid ExprList -> Stm [ctor] . *** async call
+op new(_;_;_;_) : Vid Cid ExprList Entity -> Stm [ctor] .
+op get(_;_) : Vid Vid  -> Stm [ctor] .
+op get(_;_) : Label Vid -> Stm [ctor] .
+op call(_;_;_;_) : Label Oid Mid DataList -> Stm [ctor] .
+op return(_) : Expr -> Stm [ctor] .
+op mark(_) : Expr -> Stm [ctor] .
+op release(_) : Expr -> Stm [ctor] .
+op _.addInst(_) : Expr Oid -> Stm [ctor] . ***notsure if oid or expr
+op _.remInst(_) : Expr Oid -> Stm [ctor] . ***notsure if oid or expr
+op _.addCon(_) : Expr Policy -> Stm [ctor] .
+op _.remCon(_) : Expr Policy -> Stm [ctor] .
+op end : -> Stm .
+
+endfm
+
+view Stm from TRIV to PAOL-STATEMENTS is
+   sort Elt to Stm .
+endv
+
+fmod STM-LIST is
+pr PAOL-STATEMENTS .
+pr PAOL-SUBST .
+protecting LIST{Stm} * (sort List{Stm} to StmList,
+                        sort NeList{Stm} to NeStmList,
+                        op nil : -> List{Stm} to noStm,
+                        op __ : List{Stm} List{Stm} -> List{Stm} to _;_  ) .
+op if(_){_} : Expr StmList -> Stm [ctor] .
+endfm
+
+
+
+fmod PAOL-PROCESS is
+pr STM-LIST .
+
+sorts Process NeMProc MProc .
+var L : Subst .
+var st : Stm .
+var SL : StmList .
+var eta : Entity .
+
+subsort Process < MProc .
+op idle : -> Process [ctor format (!b o )] .
+op noProc : -> MProc [ctor] .
+op _+_ : Process Stm -> Process .
+op _,_ : MProc MProc -> MProc [ctor assoc comm id: noProc prec 41 format (d r osni d) ] .
+op {_|_}(_) : Subst StmList Entity -> Process [ctor ] .
+
+eq {L | noStm }(eta) = idle .
+eq ({L | SL }(eta) + st) = ({L | SL ; st}(eta)) .
+
+endfm
+
+
+fmod PAOL-METHOD is
+  protecting STM-LIST .
+  protecting PAOL-MID .
+  sort Method .
+  op <_: Method | Param:_, Latt:_, Code:_> :
+    Mid VidList Subst StmList -> Method
+    [ctor format (nib ! ob o d sb o d sb o d sb o b o)] .
+
+endfm
+
+view Method from TRIV to PAOL-METHOD is
+  sort Elt to Method .
+endv
+
+
+fmod CLASS is
+  protecting STM-LIST .
+  protecting PAOL-CID .
+  protecting SET{Method} * (sort Set{Method} to MMtd,
+                            op empty : -> Set{Method} to noMethod) .
+  protecting SET{String} * (sort Set{String} to StringSet) .
+
+  var C : Cid .
+  var MM : MMtd .
+  var AL : VidList .
+  vars L S S1 : Subst .
+  vars F F' : Nat .
+  sorts   Class .
+
+
+  --- Class declaration.
+  *** op <_:Class | Param:_, Att:_, Mtds:_, Ocnt:_> :
+      op <_: Cl | Par:_, Att:_, Mtds:_, Ocnt:_> :
+      Cid VidList Subst MMtd Nat -> Class
+    [format (b! b o o o  b o o  b o o  b on o  b o  b! on )] . *** ok until here
+
+  op emptyClass : -> Class .
+  eq emptyClass = < 'noClass : Cl | Par: emp, Att: noSubst, Mtds: noMethod, Ocnt: 0 > .
+
+
+endfm
+
+fmod OBJECT is
+protecting CLASS .
+pr PAOL-PROCESS .
+sort Object .
+
+var C : Cid .
+var O O' : Oid .
+var MM : MMtd .
+var q : MProc .
+var AL : VidList .
+vars L S S1 : Subst .
+vars F F' : Nat .
+vars P P' : Process .
+var eta eta' : Entity .
+
+  --- Oid: object ID
+  --- Cid: class ID
+  --- Subst: fields
+  --- Nat: counter for generating unique future labels
+  op <_:Ob | Class:_ | Att:_, Pr:_, Lcnt:_, Ent:_ , PrQ:_> :
+         Oid Cid Subst Process Nat Entity MProc -> Object
+           [ctor ] . *** ok until here
+ ---not sure about process Queue
+
+  op noObj : -> Object [ctor] .
+  op getClass : Object -> Cid .
+  eq getClass(< O :Ob | Class: C | Att: L , Pr: P, Lcnt: F, Ent: eta, PrQ: q >) = C .
+
+endfm
+
+
+
+
+mod PAOL-COMMUNICATION is
+  protecting OBJECT .
+  protecting PRIV_DATA .
+  protecting PAOL-PROCESS .
+  protecting PAOL-OID .
+  protecting PAOL-CID .
+  protecting PAOL-MID .
+  protecting CLASS .
+  protecting SET{Method} * (sort Set{Method} to MMtd,
+                            op empty : -> Set{Method} to noMethod) .
+  protecting SET{String} * (sort Set{String} to StringSet) .
+
+  --- Define object identifiers.
+  protecting CONVERSION .
+  protecting COUNTER .
+  protecting RANDOM .
+  sorts Future Msg .
+  vars B M : String .
+  var C : Cid .
+  vars O O' : Oid .
+  vars L S S1 : Subst .
+  vars P P' : Process .
+  vars MS MS1 : MMtd .
+  var W : MProc .
+  var AL : VidList .
+  vars SL SL1 : StmList .
+  var EL : ExprList .
+  var D : Data .
+  var DL : DataList .
+  var N : Label .
+  vars F F' : Nat .
+  var T : Rat .
+  vars LIM RAND : Nat .
+
+  --- Invocation protocol.
+  ---
+  --- Invocation message generated by the calling object:
+  ---    invoc(R,N,M,DL,E)
+  --- R: The receiver.
+  --- N: The label.
+  --- M: The called method.
+  --- DL: The actual arguments.
+  --- E: The Entity.
+  op invoc : Oid Label Mid DataList Entity -> Msg [ctor] .
+  op comp : Oid DataList -> Msg [ctor] .
+  --- Process creation in target object:
+  --- M: the method.
+  --- N: the future (label).
+  --- DL: the parameters (already evaluated by the caller).
+  op makeProcess : Method Label DataList Entity -> Process [ctor] .
+  op nomsg : -> Msg [ctor] .
+   *** ok until here
+  ---Define Consent
+  sort FutureStatus .
+  ops Waiting Completed Error : -> FutureStatus .
+  --- Terms that represent futures:
+  --- L: Future label (globally unique)
+  --- M: Method name (String, not used in calculations)
+  --- S: Status of the future
+  --- D: Result
+  op future : Label Mid FutureStatus Nat Data -> Future .
+  op nofuture : -> Future [ctor] .
+  *** ok until here
+  --- Oid: object ID
+  --- Cid: class ID
+  --- Subst: fields
+  --- Nat: counter for generating unique future labels
+  --- Bool: liveness of object
+
+endm
+
+view Msg from TRIV to PAOL-COMMUNICATION is
+  sort Elt to Msg .
+endv
+
+
+
+mod PAOL-CONFIGURATION is
+  protecting PAOL-COMMUNICATION .
+  sorts  Configuration MConfiguration .
+  subsort Object Msg Future ConsentSet Class < Configuration .
+  op none : -> Configuration [ctor] .
+  op __ : Configuration Configuration -> Configuration [ctor config assoc comm id: none] .
+  op main{_,_}_ : Subst StmList Configuration -> MConfiguration .
+  op { _ } : Configuration -> MConfiguration .
+  var C : Cid .
+  var E : ExprList .
+  var SL : StmList .
+  var L : Subst .
+  var MC : Configuration .
+  eq main { L, SL } MC = { < obj('main) :Ob | Class: 'class | Att: ('this |-> obj('main) ), Pr: { L | SL }(noent), Lcnt: 0, Ent: noent , PrQ: noProc >  MC } .
+
+endm
+
+
+
+mod PAOL-EVAL is
+protecting PRIV_DATA .
+protecting PAOL-SUBST .
+protecting COUNTER .
+protecting RANDOM .
+protecting PAOL-CONFIGURATION .
+
+*** Variables
+var F  :  Label .
+vars E E' E'' : Expr .
+vars D D' : Data .
+vars DL DL1 DL2 DL3 : DataList .
+vars NPd NPd' : NonPrivData .
+vars Pd Pd' : PrivData .
+vars EL : ExprList .
+var NeEl : NeExprList .
+vars V V' : Vid .
+var VL : VidList .
+vars Q  : String .
+vars Q1 Q2 : String .
+vars eta eta' : Entity .
+var QID : Qid .
+var M : Mid .
+vars Us Us' : UidSet .
+vars Ps Ps' : PurposeSet .
+vars S S' L L' : Subst .
+vars St St1 : Stm .
+vars SL SL1 Sl2 : StmList .
+var CN : Configuration .
+var OB : Object .
+var O O' : Oid .
+var FS : FutureStatus .
+vars N N1 N2 : Nat .
+var MS : Msg .
+var W : MProc .
+var P : Process .
+vars C C' : Cid .
+var SS : SSubst .
+var MIS : MMtd .
+vars t t' : Tags .
+var I : Int .
+var B : Bool .
+
+  --- Check if a message is in the queue.
+  op completed : Label Configuration -> Bool .
+  eq completed(F, future(F, M, FS, N, D) CN ) =
+    FS == Completed or FS == Error . --- error here
+  eq completed(F, CN) = false [owise] .
+
+op eval : Expr Subst  Configuration -> Data .
+op evalList : ExprList Subst Configuration -> DataList .
+op executable : StmList Subst Configuration -> Bool .
+op schedulable : StmList Subst Configuration -> Bool .
+op _+_ : Data Data -> Data .
+op evalB    : Expr Subst Configuration    -> Bool .
+op evalN    : Expr Subst Configuration  -> Nat .
+op evalS    : Expr Subst Configuration   -> String .
+op getSchedulableProcesses : MProc Configuration Configuration  -> MProc .
+***eq getSchedulableProcesses(noProc, , CN) = noProc .
+
+
+eq eval(V, S, CN) = S[V] .
+eq eval(Pd, S, CN) = Pd .
+eq eval(NPd, S, CN) = NPd .
+
+eq executable(await E ; SL, S, CN) = eval(E, S, CN) asBool .
+eq executable(SL, S, CN) = true [owise] .
+
+eq schedulable(get(QID ; V') ; SL , S, CN) = completed(S[QID], CN) .
+eq schedulable(get(@ QID ; V') ; SL , (SS :: S), CN) = completed(SS[QID], CN) .
+eq schedulable(get(F ; V') ; SL , S, CN) = completed(F, CN) .
+eq schedulable(SL, S, CN) = executable(SL, S, CN) [owise] .
+eq PrivateData(NPd , tags(Us, Ps)) + PrivateData (NPd' , tags(Us', Ps')) = PrivateData( (NPd appen NPd'), tags( union(Us,Us'), intersection(Ps,Ps'))) .
+eq PrivateData( NPd , tags(Us, Ps) ) + NPd' = PrivateData( (NPd appen NPd'), tags(Us, Ps) ) .
+eq NPd' + PrivateData( NPd , tags(Us, Ps) ) = PrivateData( (NPd appen NPd') , tags(Us, Ps) ) .
+eq NPd + NPd' = NPd appen NPd' .
+
+eq evalN(E,S,CN) = eval(E,S, CN ) asNat .                  *** expressions
+eq evalB(E,S,CN) = eval(E,S, CN) asBool .                 *** expressions
+eq evalS(E,S,CN) = eval(E,S,CN) asStr .                  *** expressions
+eq eval (emp, S, CN)= emp .
+eq evalList(emp, S, CN)  = eval(emp, S, CN) .
+eq evalList(E,,EL, S, CN) = eval(E, S, CN),, evalList(EL, S, CN) .
+
+*** Normal variable lookup.  Can be either instance or local variable.
+eq eval (QID ,S , CN) = S[QID] .
+eq eval(@ QID, (SS :: S), CN) =  SS [QID] .
+
+eq eval(Q(EL), S, CN) = eval(fdefn(Q),createSubst(fparams(Q), evalList(EL, S, CN)), CN) .
+eq eval(Q [EL], S, CN) = Q [evalList(EL, S, CN) ] .
+eq eval(Q [EL], S, CN) = Q [evalList(EL, S, CN ) ] .
+eq eval(?(QID), S, CN) = completed(S[QID], CN) asPaolBool .
+eq eval(?(@ QID), (SS :: S), CN) = completed(SS[QID], CN) asPaolBool .
+eq eval(?(F), S, CN) = completed(F, CN) asPaolBool .
+
+***(--- Evaluate lists of expressions.
+eq evalList(emp, S, CN) = emp .
+eq evalList(noVid, S, CN) = emp .
+eq evalList(DL, S, CN) = DL .
+eq evalList(E, S, CN) = eval(E, S, CN) .
+eq evalList(E :: NeEL, S, CN) =
+  eval(E, S, CN) :: evalList(NeEL, S, CN) .)
+  op markFutures : DataList -> StmList .
+  ***ceq markFutures(D) = $mark(D) if D : Label .
+  eq markFutures(Q[DL] ) = markFutures(DL) .
+  eq markFutures(D) = noStm [owise] .
+  ceq markFutures(D ,, DL) = markFutures(D) ; markFutures(DL)
+  if DL =/= emp .
+  eq markFutures(emp) = noStm .
+
+  op freeFutures : DataList -> StmList .
+***  ceq freeFutures(D) = $release(D) if D : Label .
+  eq freeFutures(Q[DL]) = freeFutures(DL) .
+  eq freeFutures(D) = noStm [owise] .
+  ceq freeFutures(D ,, DL) = freeFutures(D) ; freeFutures(DL)
+  if DL =/= emp .
+  eq freeFutures(emp) = noStm .
+
+  op freeFutures : SSubst -> StmList .
+  eq freeFutures(noSubst) = noStm .
+  eq freeFutures((V |-> D, SS)) = freeFutures(D) ; freeFutures(SS) .
+  op freeFutures : Subst -> StmList .
+  eq freeFutures(S :: SS) = freeFutures(SS) ; freeFutures(S) .
+
+***kill process here?
+
+***Filter a process list and return the ones that are schedulable.  Second
+*** argument is a list of objects referenced from the processes, third one
+*** the configuration (for checking status of futures).  Fourth argument is
+*** auxiliary values for eval.
+***(
+op getSchedulableProcesses : MProc Configuration Configuration  -> MProc .
+eq getSchedulableProcesses(noProc, OBJS, CN) = noProc .
+ceq getSchedulableProcesses(({ S' | SL }, W), object(O, C:Cid, S, N, LIVE ) OBJS, CN) =
+  if schedulable(SL, (S :: S'), object(O, C:Cid, S, N, LIVE) CN, (MAC, '.deadline |-> S'['.deadline]))
+  then { S' | SL }, getSchedulableProcesses(W, object(O, C:Cid, S, N, LIVE) OBJS, CN, MAC)
+  else getSchedulableProcesses(W, object(O, C:Cid, S, N, LIVE) OBJS, CN, MAC)
+  fi
+if O := S'['this] .)
+--- message generation
+eq
+< O :Ob | Class: C | Att: S, Pr: { L | call(F ; O' ; M ; DL ) ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: W >
+ =
+< O :Ob | Class: C | Att: S, Pr: { L | markFutures(DL) ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: W >
+  invoc(O, F, M, DL, eta')
+  [label call-internal] .
+
+eq
+< O :Ob | Class: C | Att: S, Pr: P , Lcnt: N, Ent: eta, PrQ: W >
+< C : Cl | Par: VL, Att: S' , Mtds: (MIS, < M : Method | Param: VL , Latt: S , Code: SL >) , Ocnt: N >
+  invoc(O, F, M, DL, eta')
+  =
+< O :Ob | Class: C | Att: S, Pr: P , Lcnt: N, Ent: eta, PrQ: (W, makeProcess(< M : Method | Param: VL, Latt: S, Code: SL >, F, DL, eta )) >
+< C : Cl | Par: VL, Att: S' , Mtds: (MIS, < M : Method | Param: VL , Latt: S , Code: SL >) , Ocnt: N >
+    [label transport-imsg] .
+
+    --- mark
+    ---
+    --- Mark a label in use.  We don't bother to make this a rule until we need
+    --- it.
+ceq
+< O :Ob | Class: C | Att: S, Pr: { L | mark(E);  SL }(eta'), Lcnt: N, Ent: eta, PrQ: W >
+future(F, M, FS, N1, D)
+  =
+future(F, M, FS, N1 + 1, D)
+< O :Ob | Class: C | Att: S, Pr: { L | SL }(eta'), Lcnt: N, Ent: eta, PrQ: W >
+if F == eval(E, (S :: L), none)
+    [label mark] .
+
+
+    --- free
+    ---
+    --- Free a Future.
+    ---
+    ceq
+    < O :Ob | Class: C | Att: S, Pr: { L | release(E);  SL }(eta'), Lcnt: N, Ent: eta, PrQ: W >
+    future(F, M, FS, N1, D)
+    =
+    future(F, M, FS, if N1 == 0 then 0 else sd(N, 1) fi, D)
+    < O :Ob | Class: C | Att: S, Pr: { L | release(E);  SL }(eta'), Lcnt: N, Ent: eta, PrQ: W >
+    if F == eval(E, (S :: L), none) /\ (L == noSubst or-else O == L['this])
+        [label free] .
+
+
+  --- transport
+  ---
+  --- Receive an invocation message to bind the method body.  We never make
+  --- this a rule -- scheduling is done elsewhere.
+  --- Note that this rule applies to live objects only
+
+
+endm
+
+
+***THE MACHINE***
+
+mod INTERPRETER is
+  pr PAOL-EVAL .
+  protecting CONSENT .
+  protecting CONVERSION .
+
+
+vars O_0 O O' O'' : Oid .      vars C C' : Cid .
+vars V V' V'' : Vid .      var VL : VidList .
+vars E E' : Expr .     vars EL  : ExprList .        var D D' : Data . var DL DL1 DL2 : DataList .
+var ST : Stm .         vars SL SL' SL'' : StmList . vars SL1 SL2 : NeStmList .
+var P : Process .
+vars S S' L L' DB DB' : Subst .
+vars N  N' G : Nat .
+vars Tg Tg' : Tags .
+vars eta_0 eta eta' eta'' : Entity .
+var Pr : Purpose .
+var PrSet PrSet' : PurposeSet .
+var Ac : Action .
+var AcSet : ActionSet .
+vars U  U1  U2 : Uid .
+var ES : EntitySet .
+var MS : MMtd .
+var q : MProc .
+***var NS : NatS .
+var US US2 : UidSet .
+***var MM : MMsg .
+var M : Mid .
+var K : String .
+var F F' : Label .
+var Q : Qid .
+var B B' : Bool .
+var T : Nat .
+vars Cn Cn' : Consent .
+vars CnSet CnSet'  : ConsentSet .
+var Cfg : Configuration .
+var NsD NsD' : Data .
+var STRING : String .
+var MSG : Msg  .
+var POLICY : Policy .
+var PSet : SetPl .
+var OSet : OidSet .
+
+
+sort Pair .
+op <_,_>   : Oid Entity -> Pair .
+
+op Obj : Pair -> Oid .
+eq Obj(< O, eta >) = O .
+op Ent : Pair -> Entity .
+eq Ent(< O, eta >) = eta .
+op SelEnt(<_,_> ; <_,_> ; _ ) : Oid Entity Oid Entity EntitySet ->  Pair .
+ceq SelEnt ( < O , eta > ; < O' , eta' > ; ES ) = < O , eta > if eta in ES .
+eq SelEnt ( < O , eta > ; < O' , eta' > ; ES ) = < O' , eta' > [owise] .
+
+
+op _inCons_ : Uid ConsentSet -> Bool .
+eq U inCons ( (U -> PSet : OSet) , CnSet) = true .
+eq U inCons (CnSet) = false [owise] .
+
+
+ops use collect store transfer : -> ActionSet [ctor] .
+
+op allInst(_,_) : Uid ConsentSet -> OidSet .
+ceq allInst (U, ((U -> PSet : OSet),CnSet)) = OSet if U inCons ((U -> PSet : OSet),CnSet) == true .
+
+op existsInst (_,_,_) : Uid ConsentSet Oid -> Bool .
+ceq existsInst (U, CnSet, O) = true if O in allInst(U, CnSet) .
+eq existsInst (U, CnSet, O) = false  [owise] .
+
+op allUsrInst(_,_,_) : UidSet ConsentSet Oid -> Bool .
+ceq allUsrInst((U1,U2,US), CnSet, O ) = true if existsInst (U1, CnSet, O) == true /\ existsInst (U2, CnSet, O) == true /\  allUsrInst((US), CnSet, O ) = true .
+eq allUsrInst((U1,U2,US), CnSet, O ) = false [owise] .
+
+op Act(_,_,_,_) : ConsentSet Entity Uid PurposeSet -> ActionSet .
+ceq Act(((U -> ((ES, AcSet, PrSet ), PSet) : OSet),CnSet), eta,U1, PrSet') = AcSet if (eta in ES) /\ PrSet' subset PrSet /\ U == U1 .
+eq Act(((U -> ((ES, AcSet, PrSet ), PSet) : OSet),CnSet), eta,U1, PrSet') = empty [owise] .
+
+op A(_,_,_,_) : ConsentSet Entity UidSet PurposeSet  -> ActionSet .
+ceq A( CnSet,eta,(U1, US), PrSet) = intersection (Act( CnSet,eta,U1,PrSet ), Act( CnSet,eta,US,PrSet ) ) if PrSet =/= empty /\ (U1, US) =/= empty .
+ceq A( CnSet,eta,(U1, US), PrSet) = (use ,collect ,store ,transfer) if PrSet == empty /\ (U1, US) == empty .
+eq  A( CnSet,eta,(U1, US), PrSet) = empty [owise] .
+
+
+op newobjId : Cid Nat -> Oid .
+eq newobjId(Q , N)  = obj(qid(string(Q) + string( N , 10))) .
+
+op newUsrId : Nat -> Uid .
+eq newUsrId(N) = usr(N) .
+
+
+
+***Skip
+
+rl
+  < O :Ob | Class: C | Att: S, Pr: { L | skip ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: q >
+  =>
+  < O :Ob | Class: C | Att: S, Pr: { L | SL }(eta'), Lcnt: N, Ent: eta, PrQ: q  >
+[label skip] .
+
+***local assignment
+***ok
+
+crl
+  < O :Ob | Class: C | Att: S, Pr: { L | assign(Q ; E) ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > (( U -> ((ES, AcSet, PrSet), PSet) : OSet ) , CnSet )
+    =>
+  < O :Ob | Class: C | Att: S, Pr: { (insert(Q, D, S )) | markFutures(D) ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > (( U -> ((ES, AcSet, PrSet), PSet) : OSet ) , CnSet )
+  if  D := eval(E, (S :: L), none) /\ O_0 := Obj(SelEnt(< L['caller], eta' > ; < O , eta > ; ES )) /\ eta_0 := Ent(SelEnt(< L['caller], eta' > ; < O , eta > ; ES ))
+  /\ Tg := getTags(E) /\ US := Users(Tg)  /\ PrSet' := Purposes(Tg)
+  /\ allUsrInst( US , CnSet, O_0 ) == true /\ (use, collect ) in A(CnSet,eta,US, PrSet')
+  [label  assignment] .
+
+***field assignment
+
+crl
+  < O :Ob | Class: C | Att: S, Pr: { L | assign(@ Q ; E) ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > (( U -> ((ES, AcSet, PrSet), PSet) : OSet ) , CnSet )
+    =>
+  < O :Ob | Class: C | Att: (insert(Q, D, S )) , Pr: { L | markFutures(D) ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > (( U -> ((ES, AcSet, PrSet), PSet) : OSet ) , CnSet )
+  if  D := eval(E, (S :: L), none) /\ O_0 := Obj(SelEnt(< L['caller], eta' > ; < O , eta > ; ES )) /\ eta_0 := Ent(SelEnt(< L['caller], eta' > ; < O , eta > ; ES ))
+  /\ Tg := getTags(E) /\ US := Users(Tg)  /\ PrSet' := Purposes(Tg)
+  /\ allUsrInst( US , CnSet, O_0 ) == true /\ (use, collect, store  ) in A(CnSet,eta,US, PrSet')
+  [label  assignment] .
+
+ *** if cond Rule
+  crl
+    < O :Ob | Class: C | Att: S, Pr: { L | if(E){SL1} ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > (( U -> ((ES, AcSet, PrSet), PSet) : OSet ) , CnSet )
+      =>
+   if eval(E, (S :: L), none)asBool == true then
+  < O :Ob | Class: C | Att: S , Pr: { L | SL1 ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > (( U -> ((ES, AcSet, PrSet), PSet) : OSet ) , CnSet )
+  else
+    < O :Ob | Class: C | Att: S , Pr: { L | SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > (( U -> ((ES, AcSet, PrSet), PSet) : OSet ) , CnSet )
+  fi
+    if  D := eval(E, (S :: L), none) /\ O_0 := Obj(SelEnt(< L['caller], eta' > ; < O , eta > ; ES )) /\ eta_0 := Ent(SelEnt(< L['caller], eta' > ; < O , eta > ; ES ))
+    /\ Tg := getTags(E) /\ US := Users(Tg)  /\ PrSet' := Purposes(Tg)
+    /\ allUsrInst( US , CnSet, O_0 ) == true /\ (use) in A(CnSet,eta,US, PrSet')
+    [label assignment] .
+
+*** await rule
+rl
+< O :Ob | Class: C | Att: S, Pr: { L | await E ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > Cn
+ =>
+ if executable(await E, (S :: L), Cn) then
+ < O :Ob | Class: C | Att: S, Pr: { L | SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > Cn
+ else
+ < O :Ob | Class: C | Att: S, Pr: { L | await E ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > Cn
+ fi
+
+[label await] .
+
+
+*** call STATEMENTS
+
+crl
+  < O :Ob | Class: C | Att: S, Pr: { L | asyncall(V ; E ; M ; EL) ;  SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > (( U -> ((ES, AcSet, PrSet), PSet) : OSet ) , CnSet )
+    =>
+  < O :Ob | Class: C | Att: S , Pr: { L | assign(V ; E) ; call(F ; O' ; M ; DL ) ; SL }(eta'), Lcnt: (s N) , Ent: eta, PrQ: q > (( U -> ((ES, AcSet, PrSet), PSet) : OSet ) , CnSet )
+future(F, M, Waiting, 1, null)
+  if F := label(O, N) /\ DL := evalList(EL, (S :: L), none)
+  /\ O' := eval(E, (S :: L), none) /\ O_0 := Obj(SelEnt(< L['caller], eta' > ; < O , eta > ; ES )) /\ eta_0 := Ent(SelEnt(< L['caller], eta' > ; < O , eta > ; ES ))
+  /\ Tg := getTags(E) /\ US := Users(Tg)  /\ PrSet' := Purposes(Tg)
+  /\ allUsrInst( US , CnSet, O_0 ) == true /\ (use, collect, store  ) in A(CnSet,eta,US, PrSet')
+  [label assignment] .
+
+***return stmt
+
+crl
+  < O :Ob | Class: C | Att: S, Pr: { L | return(E);  SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > (( U -> ((ES, AcSet, PrSet), PSet) : OSet ) , CnSet )
+  future(F, M, Waiting, G, null)
+    =>
+  < O :Ob | Class: C | Att: S , Pr: { L | markFutures(D) ; SL }(eta'), Lcnt:  N , Ent: eta, PrQ: q > (( U -> ((ES, AcSet, PrSet), PSet) : OSet ) , CnSet )
+ future(F, M, Completed, G, D)
+  if F == L['.label]
+  /\ D := eval(E, (S :: L), none) /\ O_0 := Obj(SelEnt(< L['caller], eta' > ; < O , eta > ; ES )) /\ eta_0 := Ent(SelEnt(< L['caller], eta' > ; < O , eta > ; ES ))
+  /\ Tg := getTags(E) /\ US := Users(Tg)  /\ PrSet' := Purposes(Tg)
+  /\ allUsrInst( US , CnSet, O_0 ) == true /\ (use, collect, store  ) in A(CnSet,eta,US, PrSet')
+  [label return] .
+
+
+  *** recive result  stmt
+
+  crl
+    < O :Ob | Class: C | Att: S, Pr: { L | get(V ; V') ;  SL }(eta'), Lcnt: N, Ent: eta, PrQ: q >
+    future(F, M, Completed, G, D)
+      =>
+    < O :Ob | Class: C | Att: S , Pr: { L | assign(V' ; D) ; SL }(eta'), Lcnt: N , Ent: eta, PrQ: q >
+   future(F, M, Completed, G, D)
+    if F == (S :: L)[V]
+
+    [label receive-comp-var] .
+
+    crl
+      < O :Ob | Class: C | Att: S, Pr: { L | get(V ; V') ;  SL }(eta'), Lcnt: N, Ent: eta, PrQ: q >
+      future(F, M, Completed, G, D)
+        =>
+      < O :Ob | Class: C | Att: S , Pr: { L | assign(V' ; D) ; SL }(eta'), Lcnt: N , Ent: eta, PrQ: q >
+     future(F, M, Completed, G, D)
+      if F == (S :: L)[V]
+
+      [label receive-comp-field] .
+
+
+***object creation
+rl
+  < O :Ob | Class: C | Att: S, Pr: { L | new(V ; C' ; EL ; eta'') ;  SL }(eta'), Lcnt: N, Ent: eta, PrQ: q >
+  < C' : Cl | Par: VL, Att: S' , Mtds: MS , Ocnt: N' >
+    =>
+  < O :Ob | Class: C | Att: S , Pr: { L | assign(V ; newobjId(C', N')) ; SL }(eta'), Lcnt: N , Ent: eta, PrQ: q >
+  < C' : Cl | Par: VL, Att: S' , Mtds: MS , Ocnt: (s N')  >
+  < newobjId(C', N') :Ob | Class: C' | Att: (S', createSubst(VL, evalList(EL, S :: L, none))), Pr: idle, Lcnt: 1, Ent: eta'', PrQ: noProc >
+
+  [label new-object ] .
+
+endm
+
+***(if  O_0 := Obj(SelEnt(< L['caller], eta' > ; < O , eta > ; ES ))
+/\ eta_0 := Ent(SelEnt(< L['caller], eta' > ; < O , eta > ; ES ))
+/\ Tg := getTags(E) /\ US := Users(Tg)  /\ PrSet' := Purposes(Tg)
+/\ allUsrInst( US , CnSet, O_0 ) == true  /\ allUsrInst( US , CnSet, O' ) == true)
