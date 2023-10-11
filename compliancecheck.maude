@@ -1,25 +1,24 @@
 mod COMPLIANCE-CHCEKER is protecting INTERPRETER .
   protecting PROGRAM .
   including MODEL-CHECKER .
-  ***sort STATE .
   ***subsort state < STATE .
-  ***subsort configuration < STATE .
+subsort Configuration < State .
 
-  op useA : -> Prop .
-  op collectA : -> Prop .
-  op tranferA : -> Prop .
-  op storeA : -> Prop .
-  op _|=_ : Configuration Prop -> Bool [frozen] .
 
 var cfg : Configuration .
-var D D' U : Data .
-var N F N' : Nat .
+var D D'  : Data .
+vars N F N' : Nat .
+vars U U1 U2 : Uid .
+var US : UidSet .
 var B : Bool .
 var Policy : Policy .
-vars O O' O'' : Oid .
+var Pd : PrivData .
+vars O O' O'' O_0 : Oid .
+var OSet : OidSet .
 vars S S' L' L : Subst .
 vars Tg Tg' : Tags .
 vars eta_0 eta eta' eta'' : Entity .
+var ES : EntitySet .
 var Pr : Purpose .
 var PrSet PrSet' : PurposeSet .
 var Ac : Action .
@@ -37,43 +36,134 @@ vars Q Q' : Qid .
 var V V' V'' : Vid .
 var E : Expr .
 var EL EL' : ExprList .
+var Ev : Event .
 var M : Qid .
 var ST : Stm .
 var P P' : Process .
 var Pair : Pair .
 var formula : Formula .
 var VL : VidList .
-vars OL OL' : OidSet .
+vars OS OS' : OidSet .
 var prop : Prop .
 var Pd1 : PrivData .
 
-op comply : Configuration Oid ConsentSet -> Prop .
+op useA :  ConsentSet UidSet PurposeSet Oid Entity -> Bool .
+ceq useA (((U -> ((ES, AcSet, PrSet ), PSet) : OSet ),CnSet) ,(U1), PrSet' , O , eta ) = true if U1 == U /\ PrSet' in PrSet /\ O in OSet /\ eta in ES /\ use in AcSet .
+ceq useA (CnSet ,(U1,U2,US), PrSet , O , eta ) = true  if useA (CnSet ,(U1), PrSet , O, eta ) = true /\ useA (CnSet ,(U2), PrSet, O, eta ) = true /\ useA (CnSet ,(US), PrSet, O, eta ) = true .
+eq useA (CnSet ,US, PrSet , O , eta ) = false [owise] .
+
+op collectA : Configuration UidSet PurposeSet Oid Entity  -> Bool .
+ceq collectA (((U -> ((ES, AcSet, PrSet ), PSet) : OSet ),CnSet) ,(U1), PrSet' , O , eta ) = true if U1 == U /\ PrSet' in PrSet /\ O in OSet /\ eta in ES /\ collect in AcSet .
+ceq collectA (CnSet ,(U1,U2,US), PrSet , O , eta ) = true  if collectA (CnSet ,(U1), PrSet , O, eta ) = true /\ collectA (CnSet ,(U2), PrSet, O, eta ) = true /\ collectA (CnSet ,(US), PrSet, O, eta ) = true .
+eq collectA (CnSet ,US, PrSet , O , eta ) = false [owise] .
+
+op transferA : Configuration UidSet PurposeSet Oid Entity  -> Bool .
+ceq transferA (((U -> ((ES, AcSet, PrSet ), PSet) : OSet ),CnSet) ,(U1), PrSet' , O , eta ) = true if U1 == U /\ PrSet' in PrSet /\ O in OSet /\ eta in ES /\ transfer in AcSet .
+ceq transferA (CnSet ,(U1,U2,US), PrSet , O , eta ) = true  if transferA (CnSet ,(U1), PrSet , O, eta ) = true /\ transferA (CnSet ,(U2), PrSet, O, eta ) = true /\ transferA (CnSet ,(US), PrSet, O, eta ) = true .
+eq transferA (CnSet ,US, PrSet , O , eta ) = false [owise] .
+
+op storeA :  Configuration UidSet PurposeSet Oid Entity  -> Bool .
+ceq storeA (((U -> ((ES, AcSet, PrSet ), PSet) : OSet ),CnSet) ,(U1), PrSet' , O , eta ) = true if U1 == U /\ PrSet' in PrSet /\ O in OSet /\ eta in ES /\ store in AcSet .
+ceq storeA (CnSet ,(U1,U2,US), PrSet , O , eta ) = true  if storeA (CnSet ,(U1), PrSet , O, eta ) = true /\ storeA (CnSet ,(U2), PrSet, O, eta ) = true /\ storeA (CnSet ,(US), PrSet, O, eta ) = true .
+eq storeA (CnSet ,US, PrSet , O , eta ) = false [owise] .
+***(
+op complyassign1 : -> Prop .
+op complyassign2 : -> Prop .
+op complycond : -> Prop .
+op complyreturn : -> Prop .
+op complyrecive : -> Prop .
+op complycall : -> Prop .
+op complynewobj  : -> Prop .)
+
+op comply : Oid ConsentSet -> Prop .
+
+op _|=_ : State Prop -> Bool [frozen] .
+
 **************************
 
-***(
-ceq  (cfg  < O :Ob | Class: C | Att: S, { L | assign(Q ; E) ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > Cn) |=
-comply(cfg, O , CnSet ) = true
-if useA() == true /\ collectA() == true .
-ceq  (cfg  < O :Ob | Class: C | Att: S, Pr: { L |  assign(@ Q ; E) ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > Cn) |=
-comply(cfg, O , CnSet ) = true
-if useA() == true /\ collectA() == true /\ storeA() == true .
-ceq  (cfg  < O :Ob | Class: C | Att: S, Pr: { L |  if(E){SL1} ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > Cn) |=
-comply(cfg, O , CnSet ) = true
-if useA() == true .
-ceq  (cfg  < O :Ob | Class: C | Att: S, Pr: { L |  asyncall(V ; E ; M ; EL) ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > Cn) |=
-comply(cfg, O , CnSet ) = true
-if useA() == true /\ transferA() == true .
-ceq  (cfg  < O :Ob | Class: C | Att: S, Pr: { L | new(V ; C' ; EL ; eta'') ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > Cn) |=
-comply(cfg, O , CnSet ) = true
-if useA() == true /\ collectA() == true /\ storeA()  == true /\ transferA() == true .
-ceq  (cfg  < O :Ob | Class: C | Att: S, Pr: { L | return(E) ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > Cn) |=
-comply(cfg, O , CnSet ) = true
-if useA() == true /\ transferA() == true .)
+ceq  cfg (( U -> ((ES, AcSet, PrSet), PSet) : OSet ) , CnSet ) < O :Ob | Class: C | Att: S, Pr: { L | assign(Q ; E) ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > |= comply( O , CnSet' ) = true
+if  O_0 := Obj(SelEnt(< L['caller], eta' > ; < O , eta > ; ES )) /\ eta_0 := Ent(SelEnt(< L['caller], eta' > ; < O , eta > ; ES )) /\
+useA(CnSet , Users(getTags(E)) , Purposes(getTags(E)), O_0, eta_0 ) == true /\ collectA( CnSet , Users(getTags(E)) , Purposes(getTags(E)), O_0, eta_0 ) == true .
 
-op GDPRComplianceConf : Configuration PrivData ConsentSet -> Formula .
-eq GDPRComplianceConf(cfg , Pd1, CnSet) = True .
+ceq  cfg (( U -> ((ES, AcSet, PrSet), PSet) : OSet ) , CnSet ) < O :Ob | Class: C | Att: S, Pr: { L | assign(@ Q ; E) ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > |= comply( O , CnSet' ) = true
+if  O_0 := Obj(SelEnt(< L['caller], eta' > ; < O , eta > ; ES )) /\ eta_0 := Ent(SelEnt(< L['caller], eta' > ; < O , eta > ; ES )) /\
+useA(CnSet , Users(getTags(E)) , Purposes(getTags(E)), O_0, eta_0 ) == true /\ collectA( CnSet , Users(getTags(E)) , Purposes(getTags(E)), O_0, eta_0 ) == true
+/\ storeA(CnSet , Users(getTags(E)) , Purposes(getTags(E)), O_0, eta_0 ) == true .
+
+
+ceq  cfg (( U -> ((ES, AcSet, PrSet), PSet) : OSet ) , CnSet ) < O :Ob | Class: C | Att: S, Pr: { L | if(E){SL'} ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > |= comply( O , CnSet' ) = true
+if  O_0 := Obj(SelEnt(< L['caller], eta' > ; < O , eta > ; ES )) /\ eta_0 := Ent(SelEnt(< L['caller], eta' > ; < O , eta > ; ES )) /\
+useA(CnSet , Users(getTags(E)) , Purposes(getTags(E)), O_0, eta_0 ) == true .
+
+ceq  cfg (( U -> ((ES, AcSet, PrSet), PSet) : OSet ) , CnSet ) < O :Ob | Class: C | Att: S, Pr: { L | asyncall(V ; E ; M ; EL) ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > |= comply( O , CnSet' ) = true
+if  O_0 := Obj(SelEnt(< L['caller], eta' > ; < O , eta > ; ES )) /\ eta_0 := Ent(SelEnt(< L['caller], eta' > ; < O , eta > ; ES )) /\
+useA(CnSet , Users(getTags(EL)) , Purposes(getTags(EL)), O_0, eta_0 ) == true /\ transferA( CnSet , Users(getTags(EL)) , Purposes(getTags(EL)), O_0, eta_0 ) == true .
+ceq  cfg (( U -> ((ES, AcSet, PrSet), PSet) : OSet ) , CnSet ) < O :Ob | Class: C | Att: S, Pr: { L | new(V ; C' ; EL ; eta'') ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > |= comply( O , CnSet' ) = true
+if  O_0 := Obj(SelEnt(< L['caller], eta' > ; < O , eta > ; ES )) /\ eta_0 := Ent(SelEnt(< L['caller], eta' > ; < O , eta > ; ES ))
+/\ useA(CnSet , Users(getTags(EL)) , Purposes(getTags(EL)), O_0, eta_0 ) == true /\ collectA( CnSet , Users(getTags(EL)) , Purposes(getTags(EL)), O_0, eta_0 ) == true
+/\ storeA(CnSet , Users(getTags(EL)) , Purposes(getTags(EL)), O_0, eta_0 ) == true /\ transferA( CnSet , Users(getTags(EL)) , Purposes(getTags(EL)), O_0, eta_0 ) == true .
+
+
+ceq  cfg (( U -> ((ES, AcSet, PrSet), PSet) : OSet ) , CnSet ) < O :Ob | Class: C | Att: S, Pr: { L | return(E) ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > |= comply( O , CnSet' ) = true
+if  O_0 := Obj(SelEnt(< L['caller], eta' > ; < O , eta > ; ES )) /\ eta_0 := Ent(SelEnt(< L['caller], eta' > ; < O , eta > ; ES ))
+/\ useA(CnSet , Users(getTags(E)) , Purposes(getTags(E)), O_0, eta_0 ) == true  /\ transferA( CnSet , Users(getTags(E)) , Purposes(getTags(E)), O_0, eta_0 ) == true .
+
+
+op Assignrule1(_) : Oid -> Prop .
+eq cfg (( U -> ((ES, AcSet, PrSet), PSet) : OSet ) , CnSet ) < O :Ob | Class: C | Att: S, Pr: { L | assign(Q ; E) ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > |= Assignrule1(O) = true .
+op Assignend1(_) : Oid -> Prop .
+eq cfg ruleLabel(O', Ev) |= Assignend1(O) = (O == O') and (Ev == assignvarEv)  .
+
+op Assignrule2(_) : Oid -> Prop .
+eq cfg (( U -> ((ES, AcSet, PrSet), PSet) : OSet ) , CnSet ) < O :Ob | Class: C | Att: S, Pr: { L | assign( @ Q ; E) ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > |= Assignrule2(O) = true .
+op Assignend2(_) : Oid -> Prop .
+eq cfg ruleLabel(O', Ev) |= Assignend2(O) = (O == O') and (Ev == assignfldEv)  .
+
+op condrule(_) : Oid -> Prop .
+eq cfg (( U -> ((ES, AcSet, PrSet), PSet) : OSet ) , CnSet ) < O :Ob | Class: C | Att: S, Pr: { L | if(E){SL'} ; SL  }(eta'), Lcnt: N, Ent: eta, PrQ: q > |= condrule(O) = true .
+op condnend(_) : Oid -> Prop .
+eq cfg ruleLabel(O', Ev) |= condnend(O) = (O == O') and (Ev == condEv)  .
+
+op callrule(_) : Oid -> Prop .
+eq cfg (( U -> ((ES, AcSet, PrSet), PSet) : OSet ) , CnSet ) < O :Ob | Class: C | Att: S, Pr: { L | asyncall(V ; E ; M ; EL) ; SL  }(eta'), Lcnt: N, Ent: eta, PrQ: q > |= callrule(O) = true .
+op callend(_) : Oid -> Prop .
+eq cfg ruleLabel(O', Ev) |= callend(O) = (O == O') and (Ev == callEv)  .
+
+op returnrule(_) : Oid -> Prop .
+eq cfg (( U -> ((ES, AcSet, PrSet), PSet) : OSet ) , CnSet ) < O :Ob | Class: C | Att: S, Pr: { L | return(E) ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > |= returnrule(O) = true .
+op returnend(_) : Oid -> Prop .
+eq cfg ruleLabel(O', Ev) |= returnend(O) = (O == O') and (Ev == returnEv)  .
+
+op newobjrule(_) : Oid -> Prop .
+eq cfg (( U -> ((ES, AcSet, PrSet), PSet) : OSet ) , CnSet ) < O :Ob | Class: C | Att: S, Pr: { L | new(V ; C' ; EL ; eta'') ; SL }(eta'), Lcnt: N, Ent: eta, PrQ: q > |= newobjrule(O) = true .
+op newobjend(_) : Oid -> Prop .
+eq cfg ruleLabel(O', Ev) |= newobjend(O) = (O == O') and (Ev == objectEv)  .
+
+
+op oids(_) : Configuration -> OidSet .
+eq oids(none) = emp .
+eq oids( < O :Ob | Class: C | Att: S, Pr: P, Lcnt: N, Ent: eta, PrQ: q > cfg ) = ((O , oids(cfg))) .
+eq oids(cfg) = emp [owise] .
+
+op objectSetFair(_) : OidSet -> Formula .
+eq objectSetFair(emp) = True .
+eq objectSetFair(O) = objectFair(O) .
+eq objectSetFair((OS , OS')) = objectSetFair(OS) /\ objectSetFair(OS') .
+
+op objectFair(_) : Oid -> Formula .
+eq objectFair(O) = ([] <> Assignrule1(O) -> ( [] <>  Assignend1(O)))
+/\ ([] <> Assignrule2(O) -> ( [] <>  Assignend2(O)))
+/\ ([] <> condrule(O) -> ([] <>  condnend(O)))
+/\ ([] <> callrule(O) -> ([] <>  callend(O)))
+/\ ([] <> returnrule(O) -> ([] <>  returnend(O)))
+/\ ([] <> newobjrule(O) -> ([] <>  newobjend(O))) .
+
+
 op GDPRCompliance : Oid PrivData ConsentSet -> Formula .
-
-
+eq GDPRCompliance( O, Pd , CnSet ) = [] comply( O , CnSet ) .
+op GDPRComplianceConf : Configuration PrivData ConsentSet -> Formula .
+eq GDPRComplianceConf (< O :Ob | Class: C | Att: S, Pr: P, Lcnt: N, Ent: eta, PrQ: q > cfg , Pd1, CnSet) =
+GDPRCompliance (O, Pd1 , CnSet) /\ GDPRComplianceConf (cfg, Pd1 , CnSet) .
+eq GDPRComplianceConf (< O :Ob | Class: C | Att: S, Pr: P, Lcnt: N, Ent: eta, PrQ: q > cfg , Pd1, CnSet) = True .
 
 endm
