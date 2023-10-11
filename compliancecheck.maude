@@ -166,4 +166,6 @@ eq GDPRComplianceConf (< O :Ob | Class: C | Att: S, Pr: P, Lcnt: N, Ent: eta, Pr
 GDPRCompliance (O, Pd1 , CnSet) /\ GDPRComplianceConf (cfg, Pd1 , CnSet) .
 eq GDPRComplianceConf (< O :Ob | Class: C | Att: S, Pr: P, Lcnt: N, Ent: eta, PrQ: q > cfg , Pd1, CnSet) = True .
 
+
+
 endm
