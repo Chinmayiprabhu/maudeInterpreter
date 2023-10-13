@@ -21,3 +21,6 @@ load PAOLIntrpreter.maude <br>
 load workingconfig.maude <br>
 load model-checker.maude <br>
 load compliancecehck.maude <br>
+In the maude prompt enter the following command
+red modelcheck(init, GDPRComplianceConf(init, 'data, (user('alice) -> ((Hosp,Nu,GP),(use, collect, store), (Healthcare, Emergency)): ('his, 'nu)) ,
+  (user('bob) -> ((Hosp,GP),(use, collect, store, transfer ), (Healthcare, Emergency)): ('his, 'nu, 'gp))))
