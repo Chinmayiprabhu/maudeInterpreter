@@ -1,26 +1,44 @@
-### Introduction
+# PAOL Interpreter
 
-PAOl is Privacy aware language that proposes an integration of privacy concepts into a core active object language to explore how language semantics can be used to ensure personal data handling by design and default. In this repository we provide formalisation  of PAOL semantics and Model checking Compliance property. 
+A Maude interpreter for PAOL (Privacy-Aware Active Object Language) with privacy enforcement.
 
-### Download and Run:
+## Files
 
-To run and test the code, the rewriting tool [http://maude.cs.illinois.edu/][Maude version 3.1] is needed. To download, please refer to the documentation for installation instructions and further information., it's downloadable free of charge from the University of Illinois.
+- `Interprter-PAOL.maude` - Main PAOL interpreter
+- `workingconf.maude` - Hospital management example (non-violating)
+- `violation-example.maude` - Marketing violation example (violating)
+- `test-hygienic.maude` - Test hygienic program
+- `test-violation-example.maude` - Test violation program
 
+- `OUTPUT-ANALYSIS.md` - Output analysis
 
+## Examples
 
-### PAOL's formalization in Maude
+### Non-Violating Example (Hospital)
+Hospital management system with proper consent:
+```bash
+../Maude-3.5-macos-x86_64/maude test-hygienic.maude
+```
 
-PAOL data types and Interpreter is specified in the file PAOLInterpreter.maude. Compliance formula are specified in the file PAOLModelchecker.maude. Example scenario from the paper is given as working configuration in the file workingconfig.maude.
+### Violating Example (Marketing)
+Marketing tries to access data without consent:
+```bash
+../Maude-3.5-macos-x86_64/maude test-violation-example.maude
+```
 
-#### Instructions
+## Privacy Enforcement
 
-Download Maude 3.1 and the files listed on /maude in the same directory. After installing Maude, to run the model checker and test the properties for our hygienic program, use the following commands in your terminal:
+The interpreter enforces privacy through:
+- Tag-based access control
+- User consent management
+- Purpose-based restrictions
+- Runtime privacy checks
 
-sudo ./maude.darwin64  <br> 
-load PAOLIntrpreter.maude <br>
-load workingconfig.maude <br>
-load model-checker.maude <br>
-load compliancecehck.maude <br>
-In the maude prompt enter the following command <br>
-red modelcheck(init, GDPRComplianceConf(init, 'data, (user('alice) -> ((Hosp,Nu,GP),(use, collect, store), (Healthcare, Emergency)): ('his, 'nu)) ,
-  (user('bob) -> ((Hosp,GP),(use, collect, store, transfer ), (Healthcare, Emergency)): ('his, 'nu, 'gp))))
+## Test Results
+
+| Example | Type | Status | Result |
+|---------|------|--------|--------|
+| Hospital | Non-Violating | PASS | Runs successfully |
+| Marketing | Violating | PASS | Blocked by privacy |
+
+The interpreter correctly handles both examples with proper privacy enforcement.
