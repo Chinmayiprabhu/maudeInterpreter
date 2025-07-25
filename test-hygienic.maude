@@ -1,0 +1,10 @@
+load Interprter-PAOL.maude
+load workingconf.maude
+
+--- Test the hygienic hospital program
+red init .
+
+--- Search for any violations (should find none)
+search [1] init =>* C:MConfiguration .
+
+quit 

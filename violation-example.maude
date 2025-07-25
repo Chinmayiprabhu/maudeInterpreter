@@ -1,0 +1,21 @@
+mod VIOLATION-EXAMPLE is
+  pr PAOL-INTERPRETER .
+  
+  --- Define entities and purposes for violation scenario
+  ops alice bob marketing : -> Entity .
+  ops marketing research : -> Purpose .
+  
+  --- Violation example: Marketing tries to access data without consent
+  op violationExample : -> MConfiguration .
+  eq violationExample = main {
+    ('alice |-> null, 'bob |-> null, 'fut1 |-> null)
+  }
+  --- Alice and Bob only consent to research, NOT marketing
+  (user('alice) -> ((alice),(use, collect), (research)): ('alice)) ,
+  (user('bob) -> ((bob),(use, collect), (research)): ('bob))
+  < 'Marketing : Cl | Par: (emp) , Att: (noSubst),
+  Mtds: < 'sendMarketing : Method | Param: ('customer, 'data), Latt: ('result |-> null),
+  Code: assign('result ; tag('data ; tags(user('alice), (marketing)))) ; return('result) > ,
+  Ocnt: 0 > .
+  
+endm 

@@ -1,0 +1,10 @@
+load Interprter-PAOL.maude
+load violation-example.maude
+
+--- Test the violation example
+red violationExample .
+
+--- Search for violations
+search [1] violationExample =>* C:MConfiguration .
+
+quit 

@@ -1,5 +1,5 @@
 mod PROGRAM is
-  pr INTERPRETER .
+  pr PAOL-INTERPRETER .
   ops Hosp Nu GP ED  :  -> Entity .
   ops Healthcare Emergency : -> Purpose .
   op init : -> MConfiguration .

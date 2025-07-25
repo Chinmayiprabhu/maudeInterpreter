@@ -808,7 +808,7 @@ endm
 
 ***THE MACHINE***
 
-mod INTERPRETER is
+mod PAOL-INTERPRETER is
   pr PAOL-EVAL .
   protecting CONSENT .
   protecting CONVERSION .
