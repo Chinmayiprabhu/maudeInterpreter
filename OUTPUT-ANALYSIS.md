@@ -4,7 +4,7 @@
 
 **Command:**
 ```bash
-../Maude-3.5-macos-x86_64/maude test-violation.maude
+../Maude-3.5-macos-x86_64/maude test-hygienic.maude
 ```
 
 **Results:**
@@ -20,7 +20,7 @@
 
 **Command:**
 ```bash
-../Maude-3.5-macos-x86_64/maude test-proper-violation.maude
+../Maude-3.5-macos-x86_64/maude test-violation-example.maude
 ```
 
 **Results:**
